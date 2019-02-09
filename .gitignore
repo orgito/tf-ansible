@@ -1,0 +1,4 @@
+*.pyc
+*.retry
+venv
+ec2.ini

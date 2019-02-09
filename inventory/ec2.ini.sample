@@ -1,0 +1,54 @@
+[credentials]
+# The AWS credentials can optionally be specified here. Credentials specified
+# here are ignored if the environment variable AWS_ACCESS_KEY_ID or
+# AWS_PROFILE is set, or if the boto_profile property above is set.
+# aws_access_key_id = AXXXXXXXXXXXXXX
+# aws_secret_access_key = XXXXXXXXXXXXXXXXXXX
+
+
+[ec2]
+# Adjust the 2 variables according to you environment
+regions = us-east-1
+instance_filters = tag:Provision=terraform&tag:Environment=dev
+
+
+# It is usually unnecessary to change anything below
+regions_exclude = us-gov-west-1, cn-north-1
+destination_variable = private_ip_address
+hostname_variable = private_ip_address
+vpc_destination_variable = private_ip_address
+route53 = False
+rds = False
+elasticache = False
+all_instances = False
+all_rds_instances = False
+include_rds_clusters = False
+all_elasticache_replication_groups = False
+all_elasticache_clusters = False
+all_elasticache_nodes = False
+cache_path = ~/.ansible/tmp
+cache_max_age = 0
+nested_groups = True
+replace_dash_in_groups = True
+expand_csv_tags = False
+group_by_instance_id = False
+group_by_region = True
+group_by_availability_zone = True
+group_by_aws_account = False
+group_by_ami_id = True
+group_by_instance_type = True
+group_by_instance_state = False
+group_by_platform = True
+group_by_key_pair = False
+group_by_vpc_id = True
+group_by_security_group = True
+group_by_tag_keys = True
+group_by_tag_none = True
+group_by_route53_names = True
+group_by_rds_engine = False
+group_by_rds_parameter_group = False
+group_by_elasticache_engine = False
+group_by_elasticache_cluster = False
+group_by_elasticache_parameter_group = False
+group_by_elasticache_replication_group = False
+stack_filters = False

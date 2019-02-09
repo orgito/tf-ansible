@@ -1,0 +1,66 @@
+---
+- hosts: tag_Role_logstash
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Validate logstash Version
+    fail: msg="Invalid ELK Version"
+    when: elk_version is undefined or not elk_version is match("\d+\.\d+\.\d+")
+
+  - name: Get logstash current version
+    command: rpm -q logstash --qf %{VERSION}
+    args:
+      warn: no
+    changed_when: False
+    register: version_found
+
+  - name: Pre-download logstash install package
+    yum:
+      name: logstash-{{ elk_version }}
+      download_only: yes
+    when: version_found.stdout is version_compare(elk_version, '<')
+
+- hosts: tag_Role_elasticsearch
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Validate elasticsearch Version
+    fail: msg="Invalid ELK Version"
+    when: elk_version is undefined or not elk_version is match("\d+\.\d+\.\d+")
+
+  - name: Get elasticsearch current version
+    command: rpm -q elasticsearch --qf %{VERSION}
+    args:
+      warn: no
+    changed_when: False
+    register: version_found
+
+  - name: Pre-download elasticsearch install package
+    yum:
+      name: elasticsearch-{{ elk_version }}
+      download_only: yes
+    when: version_found.stdout is version_compare(elk_version, '<')
+
+- hosts: tag_Role_kibana
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Validate kibana Version
+    fail: msg="Invalid ELK Version"
+    when: elk_version is undefined or not elk_version is match("\d+\.\d+\.\d+")
+
+  - name: Get kibana current version
+    command: rpm -q kibana --qf %{VERSION}
+    args:
+      warn: no
+    changed_when: False
+    register: version_found
+
+  - name: Pre-download kibana install package
+    yum:
+      name: kibana-{{ elk_version }}
+      download_only: yes
+    when: version_found.stdout is version_compare(elk_version, '<')

@@ -1,0 +1,176 @@
+---
+- name: Elasticsearch rolling upgrade
+  hosts: tag_Role_elasticsearch
+  gather_facts: no
+  serial: 1
+  become: true
+
+  vars:
+    es_disable_allocation: '{"transient":{"cluster.routing.allocation.enable":"none"}}'
+    es_enable_allocation: '{"transient":{"cluster.routing.allocation.enable": "all","cluster.routing.allocation.node_concurrent_recoveries": 5,"indices.recovery.max_bytes_per_sec": "500mb"}}'
+    es_http_port: 9200
+    es_transport_port: 9300
+
+  tasks:
+  - name: Validate ELK Version
+    fail: msg="Invalid ELK Version"
+    when: elk_version is undefined or not elk_version is match("\d+\.\d+\.\d+")
+
+  - name: Set the es_host for the first host
+    set_fact:
+      es_host: "{{ groups.tag_Role_elasticsearch[1] }}"
+    when: "inventory_hostname == groups.tag_Role_elasticsearch[0]"
+
+  - name: Set the es_host for the remaining hosts
+    set_fact:
+      es_host: "{{ groups.tag_Role_elasticsearch[0] }}"
+    when: "inventory_hostname != groups.tag_Role_elasticsearch[0]"
+
+  - name: Ensure elasticsearch service is running
+    systemd:
+      name: elasticsearch
+      enabled: yes
+      state: started
+    register: response
+
+  - name: Wait for elasticsearch node to come back up if it was stopped
+    wait_for:
+      host: "{{ ansible_host }}"
+      port: "{{ es_transport_port }}"
+      delay: 45
+    when: response.changed == true
+
+  - name: Check current version
+    uri:
+      url: http://{{ansible_host}}:{{ es_http_port }}
+      method: GET
+    register: version_found
+    retries: 30
+    delay: 10
+
+  - name: Display Current Elasticsearch Version
+    debug: var=version_found.json.version.number
+
+  - block:
+    # In case it the play was interrupted before
+    - name: Enable shard allocation for the cluster
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_cluster/settings
+        method: PUT
+        body_format: json
+        body: "{{ es_enable_allocation }}"
+
+    - name: Wait for cluster health to return to yellow or green
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_cluster/health
+      register: response
+      until: "response.json.status == 'yellow' or response.json.status == 'green'"
+      retries: 500
+      delay: 15
+
+    - name: Disable shard allocation for the cluster
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_cluster/settings
+        method: PUT
+        body_format: json
+        body: "{{ es_disable_allocation }}"
+
+    - name: Perform a synced flush
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_flush/synced
+        method: POST
+        status_code: "200, 409"
+
+    - name: Reissue synced flush request
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_flush/synced
+        method: POST
+        status_code: "200, 409"
+      delay: 10
+
+    - name: Shutdown elasticsearch node
+      systemd:
+        name: elasticsearch
+        state: stopped
+
+    - name: Update elasticsearch
+      yum:
+        name: elasticsearch-{{ elk_version }}
+        state: present
+
+    - name: Update discovery-ec2 plugin (remove)
+      command: /usr/share/elasticsearch/bin/elasticsearch-plugin remove -s discovery-ec2
+
+    - name: Update discovery-ec2 plugin (install)
+      command: /usr/share/elasticsearch/bin/elasticsearch-plugin install -s -b discovery-ec2
+
+    - name: Update repository-s3 plugin (remove)
+      command: /usr/share/elasticsearch/bin/elasticsearch-plugin remove -s repository-s3
+
+    - name: Update repository-s3 plugin (install)
+      command: /usr/share/elasticsearch/bin/elasticsearch-plugin install -s -b repository-s3
+
+    - name: Wait for all shards to be reallocated
+      uri:
+        url: http://{{ es_host }}:{{ es_http_port }}/_cluster/health
+      register: response
+      until: "response.json.relocating_shards == 0"
+      retries: 20
+      delay: 15
+
+    - name: Start elasticsearch
+      systemd:
+        name: elasticsearch
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Wait for elasticsearch transport to come back up
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ es_transport_port }}"
+        delay: 35
+
+    - name: Wait for elasticsearch http to come back up
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ es_http_port }}"
+        delay: 5
+
+    - name: Wait for the node to join the cluster
+      uri:
+        url: http://{{ ansible_host }}:{{ es_http_port }}/_cat/nodes
+        return_content: true
+      register: response
+      until: response.content | regex_search('^' + ansible_host + '\s', multiline=True)
+      retries: 500
+      delay: 10
+
+    - name: Wait for cluster health to return to yellow or green
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_cluster/health
+      register: response
+      until: "response.json.status == 'yellow' or response.json.status == 'green'"
+      retries: 500
+      delay: 5
+
+    - name: Enable shard allocation for the cluster
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_cluster/settings
+        method: PUT
+        body_format: json
+        body: "{{ es_enable_allocation }}"
+      register: response
+      until: "response.json.acknowledged == true"
+      retries: 500
+      delay: 5
+
+    - name: Wait for the node to recover
+      uri:
+        url: http://{{ansible_host}}:{{ es_http_port }}/_cat/health
+        return_content: true
+      register: response
+      until: "'green' in response.content"
+      retries: 500
+      delay: 15
+    when: version_found.json.version.number is version_compare(elk_version, '<')
