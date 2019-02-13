@@ -1,0 +1,38 @@
+---
+- hosts: tag_Role_elasticsearch[0]
+  gather_facts: no
+  serial: 1
+  become: true
+
+  tasks:
+  - name: retrieve elasticsearch configuration
+    fetch:
+      src: /etc/elasticsearch/elasticsearch.yml
+      dest: ../../conf/elasticsearch.yml
+      flat: true
+      
+      
+- hosts: tag_Role_logstash[0]
+  gather_facts: no
+  serial: 1
+  become: true
+
+  tasks:
+  - name: retrieve logstash configuration
+    fetch:
+      src: /etc/logstash/conf.d/pipeline.conf
+      dest: ../../conf/logstash.conf
+      flat: true
+
+
+- hosts: tag_Role_kibana[0]
+  gather_facts: no
+  serial: 1
+  become: true
+
+  tasks:
+  - name: retrieve kibana configuration
+    fetch:
+      src: /etc/kibana/kibana.yml
+      dest: ../../conf/kibana.yml
+      flat: true

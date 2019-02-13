@@ -1,0 +1,1 @@
+Elastic Stack configuration files

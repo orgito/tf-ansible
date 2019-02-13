@@ -2,3 +2,6 @@
 *.retry
 venv
 ec2.ini
+conf/*.conf
+conf/*.yml
+

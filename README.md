@@ -74,6 +74,20 @@ Use the playbook `elk/upgrade/main.yml` to perform an upgrade of you elk stack. 
 ```bash
 ansible-playbook elk/upgrade/main.yml -e elk_version=6.6.0
 ```
+### ELK Settings
 
+There is a pair of playbooks that should be used for making changes to the configuration of the Elastic stack components. The first one retrieves the current configuration files for Elasticsearc, Logstash and Kibana and stores them in the `conf` folder. Then you can change those files and apply the configuration with the second playbook.
+
+To retrieve the current configuration run the command:
+
+```bash
+ansible-playbook elk/settings/retrieve.yml
+```
+
+Make the your changes to the files `elasticsearch.yml`, `logstash.conf` and/or `kibana.yml` under the `conf` folder and apply the new configuration with the command:
+
+```bash
+ansible-playbook elk/settings/apply.yml
+```
 
 
