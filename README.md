@@ -59,22 +59,23 @@ export AWS_SECRET_ACCESS_KEY='XXXXXXXXXXXXXXXXXXX'
 
 Or you can set the variables `aws_access_key_id` and `aws_secret_access_key` in the `ec2.ini` file.
 
-# The Playbooks
+## The Playbooks
 
 Before running any of the playbooks in production test them in a test environment. Remember to adjust the `instance_filters` variable to point to the correct environment.
 
-## ELK Playbooks
+### ELK Playbooks
 
 A set of playbooks to manage you ELK stack.
 
-### ELK Upgrade
+#### ELK Upgrade
 
 Use the playbook `elk/upgrade/main.yml` to perform an upgrade of you elk stack. Use the variable `elk_version` to pass a valid target version for your environment.
 
 ```bash
 ansible-playbook elk/upgrade/main.yml -e elk_version=6.6.0
 ```
-### ELK Settings
+
+#### ELK Settings
 
 There is a pair of playbooks that should be used for making changes to the configuration of the Elastic stack components. The first one retrieves the current configuration files for Elasticsearc, Logstash and Kibana and stores them in the `conf` folder. Then you can change those files and apply the configuration with the second playbook.
 
@@ -90,4 +91,4 @@ Make the your changes to the files `elasticsearch.yml`, `logstash.conf` and/or `
 ansible-playbook elk/settings/apply.yml
 ```
 
-
+The `apply.yml` playbook will copy and validate the configuration and restart the service if the configuration pass the validation.

@@ -1,0 +1,23 @@
+---
+- hosts: tag_Role_logstash
+  gather_facts: no
+  serial: 1
+  become: true
+
+  tasks:
+  - name: copy and validate logstash configuration
+    copy:
+      dest: /etc/logstash/conf.d/pipeline.conf
+      src: ../../conf/logstash.conf
+      owner: logstash
+      group: logstash
+      mode: 0644
+      validate: /usr/share/logstash/bin/logstash --config.test_and_exit -f %s
+      backup: true
+    notify: logstash restart
+
+  handlers:
+  - name: logstash restart
+    systemd:
+      name: logstash
+      state: restarted
