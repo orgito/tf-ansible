@@ -21,3 +21,26 @@
     systemd:
       name: logstash
       state: restarted
+
+
+- hosts: tag_Role_kibana
+  gather_facts: no
+  serial: 1
+  become: true
+
+  tasks:
+  - name: copy kibana configuration
+    copy:
+      dest: /etc/kibana/kibana.yml
+      src: ../../conf/kibana.yml
+      owner: kibana
+      group: kibana
+      mode: 0644
+      backup: true
+    notify: kibana restart
+
+  handlers:
+  - name: kibana restart
+    systemd:
+      name: kibana
+      state: restarted

@@ -65,7 +65,7 @@ Before running any of the playbooks in production test them in a test environmen
 
 ### ELK Playbooks
 
-A set of playbooks to manage you ELK stack.
+A set of playbooks to manage your Elastic stack.
 
 #### ELK Upgrade
 
