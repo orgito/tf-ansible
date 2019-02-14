@@ -1,4 +1,65 @@
 ---
+- hosts: tag_Role_elasticsearch
+  gather_facts: no
+  serial: 1
+  become: true
+
+  vars:
+    es_disable_allocation: '{"transient":{"cluster.routing.allocation.enable":"none"}}'
+    es_enable_allocation:  '{"transient":{"cluster.routing.allocation.enable":"all"}}'
+
+  tasks:
+  - name: copy elasticsearch configuration
+    copy:
+      dest: /etc/elasticsearch/elasticsearch.yml
+      src: ../../conf/elasticsearch.yml
+      owner: elasticsearch
+      group: elasticsearch
+      mode: 0644
+      backup: true
+    notify: elasticsearch restart
+
+  handlers:
+  - name: disable shard allocation
+    uri:
+      url: http://{{ ansible_host }}:9200/_cluster/settings
+      method: PUT
+      body_format: json
+      body: "{{ es_disable_allocation }}"
+    listen: elasticsearch restart
+
+  - name: elasticsearch restart
+    systemd:
+      name: elasticsearch
+      state: restarted
+    listen: elasticsearch restart
+
+  - name: wait for elasticsearch http to come back up
+    wait_for:
+      host: "{{ ansible_host }}"
+      port: 9200
+      delay: 5
+    listen: elasticsearch restart
+
+  - name: wait for the node to rejoin the cluster
+    uri:
+      url: http://{{ ansible_host }}:9200/_cat/nodes
+      return_content: true
+    register: response
+    until: response.content | regex_search('^' + ansible_host + '\s', multiline=True)
+    retries: 500
+    delay: 10
+    listen: elasticsearch restart
+
+  - name: enable shard allocation
+    uri:
+      url: http://{{ ansible_host }}:9200/_cluster/settings
+      method: PUT
+      body_format: json
+      body: "{{ es_enable_allocation }}"
+    listen: elasticsearch restart
+
+
 - hosts: tag_Role_logstash
   gather_facts: no
   serial: 1

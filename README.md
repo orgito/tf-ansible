@@ -91,4 +91,4 @@ Make the your changes to the files `elasticsearch.yml`, `logstash.conf` and/or `
 ansible-playbook elk/settings/apply.yml
 ```
 
-The `apply.yml` playbook will copy and validate the configuration and restart the service if the configuration pass the validation.
+The `apply.yml` playbook will copy configuration and restart the services. For Logstash the configuration will be validated before applying. Elasticsearch and Kibana do not have an option to validate the configuraiton, so the change will be applied regardless of validation.
