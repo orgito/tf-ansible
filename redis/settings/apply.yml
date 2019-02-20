@@ -1,0 +1,21 @@
+- hosts: tag_Role_redis_master:tag_Role_redis_slave
+  gather_facts: false
+  serial: 1
+  become: true
+
+  tasks:
+  - name: copy redis configuration
+    copy:
+      dest: /etc/redis.conf
+      src: ../../conf/redis.conf
+      owner: redis
+      group: root
+      mode: 0640
+      backup: true
+    notify: redis restart
+
+  handlers:
+  - name: redis restart
+    systemd:
+      name: redis
+      state: restarted  

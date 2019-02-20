@@ -1,0 +1,12 @@
+---
+- hosts: tag_Role_redis_master[0]
+  gather_facts: false
+  serial: 1
+  become: true
+
+  tasks:
+  - name: retrieve redis configuration
+    fetch:
+      src: /etc/redis.conf
+      dest: ../../conf/redis.conf
+      flat: true
