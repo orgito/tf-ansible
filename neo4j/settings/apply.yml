@@ -1,0 +1,39 @@
+- hosts: tag_Role_neo4j_core:tag_Role_neo4j_replica
+  gather_facts: true
+  serial: 1
+  become: true
+
+  tasks:
+  - name: copy core configuration
+    template:
+      dest: /etc/neo4j/neo4j.conf
+      src: ../../conf/neo4j_core.conf
+      owner: neo4j
+      group: neo4j
+      mode: 0644
+      backup: true
+    notify: neo4j restart
+    when: ec2_tag_Role == 'neo4j_core'
+
+  - name: copy replica configuration
+    template:
+      dest: /etc/neo4j/neo4j.conf
+      src: ../../conf/neo4j_replica.conf
+      owner: neo4j
+      group: neo4j
+      mode: 0644
+      backup: true
+    notify: neo4j restart
+    when: ec2_tag_Role == 'neo4j_replica'
+  
+  handlers:
+  - name: neo4j restart
+    systemd:
+      name: neo4j
+      state: restarted  
+    listen: neo4j restart
+  
+  - name: pause for a moment
+    pause:
+      seconds: 15
+    listen: neo4j restart

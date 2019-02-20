@@ -1,0 +1,37 @@
+---
+- hosts: tag_Role_neo4j_core[0]
+  gather_facts: false
+  serial: 1
+  become: true
+
+  tasks:
+  - name: prepare neo4j core file
+    shell:  sed 's/dbms.connectors.default_advertised_address=.*/dbms.connectors.default_advertised_address=\{\{ ansible_default_ipv4.address \}\}/' /etc/neo4j/neo4j.conf  | sed '/^WARNING/d' > /tmp/neo4j.conf
+    args:
+      warn: false
+    changed_when: false
+
+  - name: retrieve Neo4j core configuration
+    fetch:
+      src: /tmp/neo4j.conf
+      dest: ../../conf/neo4j_core.conf
+      flat: true
+
+
+- hosts: tag_Role_neo4j_replica[0]
+  gather_facts: false
+  serial: 1
+  become: true
+
+  tasks:
+  - name: prepare neo4j replica file
+    shell:  sed 's/dbms.connectors.default_advertised_address=.*/dbms.connectors.default_advertised_address=\{\{ ansible_default_ipv4.address \}\}/' /etc/neo4j/neo4j.conf  | sed '/^WARNING/d' > /tmp/neo4j.conf
+    args:
+      warn: false
+    changed_when: false
+
+  - name: retrieve Neo4j replica configuration
+    fetch:
+      src: /tmp/neo4j.conf
+      dest: ../../conf/neo4j_replica.conf
+      flat: true

@@ -85,10 +85,40 @@ To retrieve the current configuration run the command:
 ansible-playbook elk/settings/retrieve.yml
 ```
 
-Make the your changes to the files `elasticsearch.yml`, `logstash.conf` and/or `kibana.yml` under the `conf` folder and apply the new configuration with the command:
+Make your changes to the files `elasticsearch.yml`, `logstash.conf` and/or `kibana.yml` under the `conf` folder and apply the new configuration with the command:
 
 ```bash
 ansible-playbook elk/settings/apply.yml
 ```
 
 The `apply.yml` playbook will copy configuration and restart the services. For Logstash the configuration will be validated before applying. Elasticsearch and Kibana do not have an option to validate the configuraiton, so the change will be applied regardless of validation.
+
+### Neo4j Playbooks
+
+A set of playbooks to manage your Neo4j Casual Cluster.
+
+#### Neo4j Settings
+
+To retrieve the current configuration run the command:
+
+```bash
+ansible-playbook neo4j/settings/retrieve.yml
+```
+
+This will create 2 files under the conf folder: `neo4j_core.conf` for the core nodes and `neo4j_replica.conf` for the replica nodes.
+
+Those 2 files are actually templates. Pay attention to the line:
+
+```
+dbms.connectors.default_advertised_address={{ ansible_default_ipv4.address }}
+```
+
+**Do not change that line.** Ansible will replace it with the right configuration.
+
+Make your changes to one or both files and apply the configuration with the command:
+
+```bash
+ansible-playbook neo4j/settings/apply.yml
+```
+
+The configuration will be updated and the service restarted.
