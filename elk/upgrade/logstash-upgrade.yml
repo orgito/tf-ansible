@@ -12,6 +12,8 @@
 
   - name: Get logstash current version
     command: rpm -q logstash --qf %{VERSION}
+    args:
+      warn: false    
     changed_when: False
     register: version_found
 
