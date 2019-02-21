@@ -1,0 +1,12 @@
+- name: Update Redis
+  yum:
+    name: redis-{{ redis_version }}
+    enablerepo: remi
+    state: present
+
+- name: Restart Redis
+  systemd:
+    name: redis
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

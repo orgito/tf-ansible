@@ -1,0 +1,8 @@
+- hosts: tag_Role_redis_slave
+  gather_facts: false
+  serial: 1
+  become: true
+
+  tasks:
+  - include_tasks: _upgrade.yml
+    when: version_found.stdout is version_compare(redis_version, '<')

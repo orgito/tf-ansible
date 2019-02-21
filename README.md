@@ -127,6 +127,14 @@ The configuration will be updated and the services restarted.
 
 A set of playbooks to manage your Redis Cluster.
 
+#### Redis Upgrade
+
+To perform a rolling upgrade of the Redis cluster run the command below passing the appropriate `redis_version`:
+
+```bash
+ansible-playbook redis/upgrade/main.yml -e redis_version=5.0.3
+```
+
 #### Redis Settings
 
 To retrieve the current configuration run the command:

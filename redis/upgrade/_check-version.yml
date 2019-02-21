@@ -1,0 +1,14 @@
+- hosts: tag_Role_redis_master:tag_Role_redis_slave
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: Get Redis current version
+    command: rpm -q redis --qf %{VERSION}
+    args:
+      warn: false
+    changed_when: False
+    register: version_found
+
+  - name: Display Current Redis Version
+    debug: var=version_found.stdout

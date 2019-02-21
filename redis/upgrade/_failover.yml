@@ -1,0 +1,19 @@
+---
+- name: check node role
+  shell: redis-cli cluster nodes | grep -Eo 'myself,\w+'
+  changed_when: false
+  register: node_role
+
+- block:
+  - name: failover
+    command: redis-cli cluster failover
+    register: failover
+    changed_when: "'OK' in failover.stdout"
+    
+  - name: wait for node to become master
+    shell: redis-cli cluster nodes | grep -Eo 'myself,\w+'
+    register: result
+    until: "'myself,master' in result.stdout"
+    retries: 120
+    delay: 5
+  when: "'myself,slave' in node_role.stdout"
