@@ -1,7 +1,6 @@
 ---
 - hosts: tag_Role_neo4j_core[0]
   gather_facts: false
-  serial: 1
   become: true
 
   tasks:
@@ -20,7 +19,6 @@
 
 - hosts: tag_Role_neo4j_replica[0]
   gather_facts: false
-  serial: 1
   become: true
 
   tasks:

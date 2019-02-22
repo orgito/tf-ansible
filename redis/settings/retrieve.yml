@@ -1,7 +1,6 @@
 ---
 - hosts: tag_Role_redis_master[0]
   gather_facts: false
-  serial: 1
   become: true
 
   tasks:

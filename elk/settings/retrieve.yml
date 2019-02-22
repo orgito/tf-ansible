@@ -1,7 +1,6 @@
 ---
 - hosts: tag_Role_elasticsearch[0]
   gather_facts: no
-  serial: 1
   become: true
 
   tasks:
@@ -14,7 +13,6 @@
       
 - hosts: tag_Role_logstash[0]
   gather_facts: no
-  serial: 1
   become: true
 
   tasks:
@@ -27,7 +25,6 @@
 
 - hosts: tag_Role_kibana[0]
   gather_facts: no
-  serial: 1
   become: true
 
   tasks:
