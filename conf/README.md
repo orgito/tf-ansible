@@ -1,1 +1,1 @@
-Elastic Stack configuration files
+Configuration files

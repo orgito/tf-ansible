@@ -1,0 +1,21 @@
+- hosts: tag_Role_rabbitmq
+  gather_facts: false
+  serial: 1
+  become: true
+
+  tasks:
+  - name: copy rabbitmq configuration
+    copy:
+      dest: /etc/rabbitmq/rabbitmq.conf
+      src: ../../conf/rabbitmq.conf
+      owner: rabbitmq
+      group: rabbitmq
+      mode: 0644
+      backup: true
+    notify: rabbitmq restart
+
+  handlers:
+  - name: rabbitmq restart
+    systemd:
+      name: rabbitmq-server
+      state: restarted  

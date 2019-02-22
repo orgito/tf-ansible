@@ -1,0 +1,11 @@
+---
+- hosts: tag_Role_rabbitmq[0]
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: retrieve redis configuration
+    fetch:
+      src: /etc/rabbitmq/rabbitmq.conf
+      dest: ../../conf/rabbitmq.conf
+      flat: true

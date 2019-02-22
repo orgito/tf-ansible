@@ -97,6 +97,10 @@ The `apply.yml` playbook will copy configuration and restart the services. For L
 
 A set of playbooks to manage your Neo4j Casual Cluster.
 
+#### Neo4j Upgrade
+
+To be done
+
 #### Neo4j Settings
 
 To retrieve the current configuration run the command:
@@ -149,6 +153,32 @@ After editing the appropriate settings apply the new configuration with the comm
 
 ```bash
 ansible-playbook redis/settings/apply.yml
+```
+
+The configuration will be changed and the services restarted.
+
+### RabbitMQ Playbooks
+
+A set of playbooks to manage your RabbitMQ Cluster.
+
+#### RabbitMQ Upgrade
+
+To be done...
+
+#### RabbitMQ Settings
+
+To retrieve the current configuration run the command:
+
+```bash
+ansible-playbook rabbitmq/settings/retrieve.yml
+```
+
+This will dowload the file `/etc/rabbitmq/redis.conf` from your Redis clouster to the `conf` folder.
+
+After editing the appropriate settings apply the new configuration with the command:
+
+```bash
+ansible-playbook rabbitmq/settings/apply.yml
 ```
 
 The configuration will be changed and the services restarted.
