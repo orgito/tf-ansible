@@ -163,7 +163,23 @@ A set of playbooks to manage your RabbitMQ Cluster.
 
 #### RabbitMQ Upgrade
 
-To be done...
+Depending on what versions are involved in an upgrade, you should perform an rolling upgrade or a full stop upgrade.
+
+If rolling upgrades are not possible, the entire cluster should be stopped, then restarted. 
+
+Rolling upgrades from one patch version to another (i.e. from 3.7.x to 3.7.y) are supported except when indicated otherwise in the release notes. It is strongly recommended to consult release notes before upgrading.
+
+If the release notes indicates that a rolling upgrade is possible, use the following command to performm the upgrade:
+
+```bash
+ ansible-playbook rabbitmq/upgrade/rolling.yml -e rabbitmq_version=3.7.12
+```
+
+If a rolling upgrade is not possible perform a full stop upgrade: 
+
+```bash
+ ansible-playbook rabbitmq/upgrade/full_stop.yml -e rabbitmq_version=3.7.12
+```
 
 #### RabbitMQ Settings
 

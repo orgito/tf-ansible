@@ -1,0 +1,37 @@
+---
+- name: Check version
+  import_playbook: _check_version.yml
+
+- name: Stop all nodes
+  hosts: tag_Role_rabbitmq
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: Waiting for the pid file
+    shell: rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@$(hostname -s).pid
+    args:
+      warn: false
+    changed_when: False
+    when: version_found.stdout is version_compare(rabbitmq_version, '<')
+
+  - name: Pre-download rabitmq install package
+    yum:
+      name: rabbitmq-server-{{ rabbitmq_version }}
+      download_only: yes
+    when: version_found.stdout is version_compare(rabbitmq_version, '<')
+
+  - name: Stop RabbitMQ
+    systemd:
+      name: rabbitmq-server
+      state: stopped
+    when: version_found.stdout is version_compare(rabbitmq_version, '<')  
+
+- name: Upgrade
+  hosts: tag_Role_rabbitmq
+  gather_facts: false
+  become: true
+
+  tasks:
+  - include_tasks: _upgrade.yml
+    when: version_found.stdout is version_compare(rabbitmq_version, '<')  

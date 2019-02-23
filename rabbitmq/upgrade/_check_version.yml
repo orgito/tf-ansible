@@ -1,0 +1,13 @@
+- hosts: tag_Role_rabbitmq
+  gather_facts: false
+
+  tasks:
+  - name: Get RabbitMQ current version
+    command: rpm -q rabbitmq-server --qf %{VERSION}
+    args:
+      warn: false
+    changed_when: False
+    register: version_found
+
+  - name: Display RabbitMQ current version
+    debug: var=version_found.stdout

@@ -1,0 +1,25 @@
+---
+- name: Check version
+  import_playbook: _check_version.yml
+
+- name: Rolling Upgrade
+  hosts: tag_Role_rabbitmq
+  gather_facts: false
+  serial: 1
+  become: true
+
+  tasks:
+  - name: Waiting for the pid file
+    shell: rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@$(hostname -s).pid
+    args:
+      warn: false
+    changed_when: False
+    when: version_found.stdout is version_compare(rabbitmq_version, '<')
+      
+  - include_tasks: _upgrade.yml
+    when: version_found.stdout is version_compare(rabbitmq_version, '<')
+
+  - name: Give a chance for the queues to syncronize
+    pause:
+      seconds: 30
+    when: version_found.stdout is version_compare(rabbitmq_version, '<')

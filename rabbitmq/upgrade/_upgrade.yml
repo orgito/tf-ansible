@@ -1,0 +1,22 @@
+- name: Pre-download rabitmq install package
+  yum:
+    name: rabbitmq-server-{{ rabbitmq_version }}
+    download_only: yes
+
+- name: Update RabbitMQ
+  yum:
+    name: rabbitmq-server-{{ rabbitmq_version }}
+    state: present
+
+- name: Restart RabbitMQ
+  systemd:
+    name: rabbitmq-server
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: Waiting for the pid file
+  shell: rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@$(hostname -s).pid
+  args:
+    warn: false
+  changed_when: False
