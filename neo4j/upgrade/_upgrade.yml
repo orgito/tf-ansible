@@ -1,0 +1,31 @@
+- name: Pre-download Neo4j install package
+  yum:
+    name: neo4j-enterprise-{{ neo4j_version }}
+    download_only: yes
+
+- name: Wait until it is safe to remove this member
+  uri:
+    url: http://localhost:7474/db/manage/server/causalclustering/status
+    user: "{{ neo4j_user }}"
+    password: "{{ neo4j_password }}"
+  register: response
+  until: "'json' in response and response.json.healthy == true"
+  retries: 500
+  delay: 15
+
+- name: Update Neo4j
+  yum:
+    name: neo4j-enterprise-{{ neo4j_version }}
+    state: present
+  environment:
+    NEO4J_ACCEPT_LICENSE_AGREEMENT: "yes"
+
+- name: Wait for this member to become healthy again
+  uri:
+    url: http://localhost:7474/db/manage/server/causalclustering/status
+    user: "{{ neo4j_user }}"
+    password: "{{ neo4j_password }}"
+  register: response
+  until: "'json' in response and response.json.healthy == true"
+  retries: 500
+  delay: 15

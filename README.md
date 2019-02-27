@@ -99,7 +99,21 @@ A set of playbooks to manage your Neo4j Casual Cluster.
 
 #### Neo4j Upgrade
 
-To be done
+Before upgrading Neo4j make sure you have an updated backup. As always perform the upgrade on a test environment as similar to the production environment as possible. That way you can make sure that the upgrade is safe and will have a good estimate of the time it will take.
+
+The playbook will perform a rolling upgrade. This means that the Neo4j cluster will remain operational during the upgrade. Still try to perform the upgrade when the cluster is not in use or at least not under heavy load.
+
+Always check the [release notes](https://neo4j.com/release-notes/) to make sure the upgrade path is supported for a rolling upgrade and that there is no breacking changes.
+
+The playbook need to check the status of the node before upgrading. Therefore it will need admin credentials to the cluster. You can pass the credentials via the variables `neo4j_user` and `neo4j_password`.
+
+To upgrade the Neo4j Casual Cluster run the following command:
+
+```bash
+ansible-playbook neo4j/upgrade/main.yml -e neo4j_user=neo4j -e neo4j_password=senha -e neo4j_version=3.5.3
+```
+
+The playbook was tested for upgrading from 3.5.2 to 3.5.3.
 
 #### Neo4j Settings
 
@@ -165,7 +179,7 @@ A set of playbooks to manage your RabbitMQ Cluster.
 
 Depending on what versions are involved in an upgrade, you should perform an rolling upgrade or a full stop upgrade.
 
-If rolling upgrades are not possible, the entire cluster should be stopped, then restarted. 
+If rolling upgrades are not possible, the entire cluster should be stopped, then restarted.
 
 Rolling upgrades from one patch version to another (i.e. from 3.7.x to 3.7.y) are supported except when indicated otherwise in the release notes. It is strongly recommended to consult release notes before upgrading.
 
@@ -175,7 +189,7 @@ If the release notes indicates that a rolling upgrade is possible, use the follo
  ansible-playbook rabbitmq/upgrade/rolling.yml -e rabbitmq_version=3.7.12
 ```
 
-If a rolling upgrade is not possible perform a full stop upgrade: 
+If a rolling upgrade is not possible perform a full stop upgrade:
 
 ```bash
  ansible-playbook rabbitmq/upgrade/full_stop.yml -e rabbitmq_version=3.7.12
@@ -198,3 +212,33 @@ ansible-playbook rabbitmq/settings/apply.yml
 ```
 
 The configuration will be changed and the services restarted.
+
+### Ad Hoc Commands
+
+You can use ansible to quickly perform ad hoc commands against you servers. Here are a few simple examples:
+
+```bash
+# Confirm that your control node can communicate with all ec2 instances
+ansible all -m ping
+
+# Run a simple command agains a subset of your infra
+ansible tag_Role_redis_master -a 'uptime'
+
+# You can use multiple targets
+ansible tag_Role_redis_master:tag_Role_redis_slave -a 'uptime'
+
+# Or globbing
+ansible tag_Role_neo4j_* -a 'uptime'
+
+# If the command requires root privilege use -b option
+ansible tag_Role_kibana -b -a 'fdisk -l'
+
+# If you need to use pipes, redirects, globbing, etc use the shell module
+ansible tag_Role_elasticsearch -b -m shell -a 'ps fax | grep java'
+```
+
+You are not limited to running comands and can execute any supported Ansible module that way.
+
+### Testing
+
+Always test the playbooks in a test environment first. Remember to wait a few minutes after Terraform finish deployment the enviroment as the instances will still be executing the provisioning scripts after Terraform finishes.

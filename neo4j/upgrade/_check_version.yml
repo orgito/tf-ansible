@@ -1,0 +1,21 @@
+- hosts: tag_Role_neo4j_core:tag_Role_neo4j_replica
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: Assert that required variables are defined
+    assert:
+      that:
+        - "neo4j_user is defined"
+        - "neo4j_password is defined"
+      fail_msg: "You need to define 'neo4j_user' and 'neo4j_password' variables"
+
+  - name: Get Neo4j current version
+    command: rpm -q neo4j-enterprise --qf %{VERSION}
+    args:
+      warn: false
+    changed_when: False
+    register: version_found
+
+  - name: Display Current Neo4j Version
+    debug: var=version_found.stdout

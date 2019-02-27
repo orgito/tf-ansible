@@ -1,0 +1,23 @@
+---
+- name: check-version
+  import_playbook: _check_version.yml
+
+- name: Upgrade Core Servers
+  hosts: tag_Role_neo4j_core
+  serial: 1
+  gather_facts: false
+  become: true
+
+  tasks:
+  - include_tasks: _upgrade.yml
+    when: version_found.stdout is version_compare(neo4j_version, '<')
+
+- name: Upgrade Replica Servers
+  hosts: tag_Role_neo4j_replica
+  serial: 1
+  gather_facts: false
+  become: true
+
+  tasks:
+  - include_tasks: _upgrade.yml
+    when: version_found.stdout is version_compare(neo4j_version, '<')
