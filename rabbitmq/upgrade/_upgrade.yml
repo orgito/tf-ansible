@@ -1,4 +1,4 @@
-- name: Pre-download rabitmq install package
+- name: Pre-download RabbitMQ install package
   yum:
     name: rabbitmq-server-{{ rabbitmq_version }}
     download_only: yes

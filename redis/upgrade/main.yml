@@ -1,6 +1,6 @@
 ---
 - name: check-version
-  import_playbook: _check-version.yml
+  import_playbook: _check_version.yml
 
 - name: master-failover
   import_playbook: master-failover.yml
